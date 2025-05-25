@@ -90,7 +90,6 @@ class PreguntasActivity2 : AppCompatActivity() {
         }
     }
 
-
     private fun siguientePregunta() {
         indicePregunta++
         mostrarPregunta(indicePregunta)
