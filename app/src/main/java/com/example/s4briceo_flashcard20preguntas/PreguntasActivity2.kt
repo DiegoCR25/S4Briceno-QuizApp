@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 class PreguntasActivity2 : AppCompatActivity() {
-
 
     private val preguntas = arrayOf(
         arrayOf("Pregunta 01: ¿El Ecosistema Android es Gratuito?", "Verdadero", "Falso", "Verdadero", "Falso", "Verdadero"),
@@ -25,11 +25,13 @@ class PreguntasActivity2 : AppCompatActivity() {
         arrayOf("Pregunta 12: ¿Cual de estos componentes se utiliza para dividir la interfaz de usuario en partes reutilizables?", "Activity", "Service", "Fragment", "Broadcast Receiver", "Fragment"),
         arrayOf("Pregunta 13: ¿Que componente no puede interactuar directamente con el usuario?", "Activity", "Service", "Fragment", "Dialog", "Service"),
         arrayOf("Pregunta 14: ¿Que archivo contiene las cadenas de texto usadas en la interfaz de la aplicacion?", "strings.xml", "AndroidManifest.xml", "build.gradle", "activity_main.xml", "strings.xml"),
-        arrayOf("Pregunta 15: ¿----------------?", "", "", "", "", ""),
-        )
+        arrayOf("Pregunta 15: ¿Qué archivo contiene la configuración general de una app Android?", "build.gradle", "AndroidManifest.xml", "settings.xml", "MainActivity.kt", "AndroidManifest.xml"),
+    )
 
     private var indicePregunta = 0
     private var respuestasCorrectas = 0
+    private var respuestasIncorrectas = 0
+    private var preguntaRespondida = false
 
     private lateinit var textViewPregunta: TextView
     private lateinit var btnAlternativa1: Button
@@ -37,11 +39,12 @@ class PreguntasActivity2 : AppCompatActivity() {
     private lateinit var btnAlternativa3: Button
     private lateinit var btnAlternativa4: Button
     private lateinit var btnSiguiente: Button
+    private lateinit var btnMostrarResultados: Button
+    private lateinit var textViewFeedback: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preguntas2)
-
 
         textViewPregunta = findViewById(R.id.textViewPregunta1)
         btnAlternativa1 = findViewById(R.id.btnAlternativa1)
@@ -49,25 +52,24 @@ class PreguntasActivity2 : AppCompatActivity() {
         btnAlternativa3 = findViewById(R.id.btnAlternativa3)
         btnAlternativa4 = findViewById(R.id.btnAlternativa4)
         btnSiguiente = findViewById(R.id.btnSiguiente)
-
+        btnMostrarResultados = findViewById(R.id.btnMostrarResultados)
+        textViewFeedback = findViewById(R.id.textViewFeedback)
 
         mostrarPregunta(indicePregunta)
 
-
-        btnAlternativa1.setOnClickListener { verificarRespuesta(btnAlternativa1.text.toString()) }
-        btnAlternativa2.setOnClickListener { verificarRespuesta(btnAlternativa2.text.toString()) }
-        btnAlternativa3.setOnClickListener { verificarRespuesta(btnAlternativa3.text.toString()) }
-        btnAlternativa4.setOnClickListener { verificarRespuesta(btnAlternativa4.text.toString()) }
-
+        btnAlternativa1.setOnClickListener { if (!preguntaRespondida) verificarRespuesta(btnAlternativa1.text.toString()) }
+        btnAlternativa2.setOnClickListener { if (!preguntaRespondida) verificarRespuesta(btnAlternativa2.text.toString()) }
+        btnAlternativa3.setOnClickListener { if (!preguntaRespondida) verificarRespuesta(btnAlternativa3.text.toString()) }
+        btnAlternativa4.setOnClickListener { if (!preguntaRespondida) verificarRespuesta(btnAlternativa4.text.toString()) }
 
         btnSiguiente.setOnClickListener { siguientePregunta() }
-    }
 
+        btnMostrarResultados.setOnClickListener { mostrarResultadosDialog() }
+    }
 
     private fun mostrarPregunta(indice: Int) {
         if (indice >= preguntas.size) {
-            Toast.makeText(this, "Cuestionario Terminado", Toast.LENGTH_SHORT).show()
-            mostrarResultados()
+            // Ya no mostramos nada aquí para evitar que avance fuera del rango
             return
         }
 
@@ -77,29 +79,74 @@ class PreguntasActivity2 : AppCompatActivity() {
         btnAlternativa2.text = preguntaActual[2]
         btnAlternativa3.text = preguntaActual[3]
         btnAlternativa4.text = preguntaActual[4]
-    }
 
+        preguntaRespondida = false
+        habilitarBotones(true)
+
+        textViewFeedback.visibility = TextView.GONE
+
+        if (indice == preguntas.size - 1) {
+            btnSiguiente.visibility = Button.GONE
+            btnMostrarResultados.visibility = Button.VISIBLE
+        } else {
+            btnSiguiente.visibility = Button.VISIBLE
+            btnMostrarResultados.visibility = Button.GONE
+        }
+    }
 
     private fun verificarRespuesta(respuesta: String) {
         val respuestaCorrecta = preguntas[indicePregunta][5]
+        preguntaRespondida = true
+        habilitarBotones(false)
+
         if (respuesta == respuestaCorrecta) {
             respuestasCorrectas++
-            Toast.makeText(this, "¡Correcto!", Toast.LENGTH_SHORT).show()
+            textViewFeedback.apply {
+                text = "Correcto. La respuesta es: \"$respuestaCorrecta\"."
+                setTextColor(resources.getColor(android.R.color.holo_green_dark, theme))
+                visibility = TextView.VISIBLE
+            }
         } else {
-            Toast.makeText(this, "Respuesta incorrecta", Toast.LENGTH_SHORT).show()
+            respuestasIncorrectas++
+            textViewFeedback.apply {
+                text = "Incorrecto. La respuesta correcta es: \"$respuestaCorrecta\"."
+                setTextColor(resources.getColor(android.R.color.holo_red_dark, theme))
+                visibility = TextView.VISIBLE
+            }
         }
     }
 
     private fun siguientePregunta() {
+        if (!preguntaRespondida) {
+            Toast.makeText(this, "Por favor, selecciona una respuesta primero", Toast.LENGTH_SHORT).show()
+            return
+        }
         indicePregunta++
         mostrarPregunta(indicePregunta)
     }
 
-    private fun mostrarResultados() {
+    private fun mostrarResultadosDialog() {
         val totalPreguntas = preguntas.size
-        val mensaje =
-            "Has respondido correctamente $respuestasCorrectas de $totalPreguntas preguntas."
+        val mensaje = """
+            Has respondido correctamente $respuestasCorrectas de $totalPreguntas preguntas.
+            Respuestas incorrectas: $respuestasIncorrectas
+        """.trimIndent()
 
-        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show()
+        AlertDialog.Builder(this)
+            .setTitle("Resultados del Quiz")
+            .setMessage(mensaje)
+            .setCancelable(false)
+            .setPositiveButton("Cerrar") { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .show()
+    }
+
+    private fun habilitarBotones(habilitar: Boolean) {
+        btnAlternativa1.isEnabled = habilitar
+        btnAlternativa2.isEnabled = habilitar
+        btnAlternativa3.isEnabled = habilitar
+        btnAlternativa4.isEnabled = habilitar
     }
 }

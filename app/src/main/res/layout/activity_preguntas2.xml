@@ -31,7 +31,6 @@
                 android:textSize="18sp"
                 android:layout_marginBottom="16dp" />
 
-
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
@@ -63,6 +62,16 @@
                     android:text="Madrid" />
             </LinearLayout>
 
+            <!-- TextView para feedback -->
+            <TextView
+                android:id="@+id/textViewFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:padding="8dp"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/btnSiguiente"
@@ -70,6 +79,14 @@
                 android:layout_height="wrap_content"
                 android:text="Siguiente"
                 android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/btnMostrarResultados"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mostrar Resultados"
+                android:textAlignment="center"
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
